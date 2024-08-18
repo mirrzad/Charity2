@@ -3,20 +3,41 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from accounts.permissions import IsCharityOwner, IsBenefactor
-from charities.models import Task
+from charities.models import Task, Benefactor, Charity
 from charities.serializers import (
     TaskSerializer, CharitySerializer, BenefactorSerializer
 )
 
 
 class BenefactorRegistration(APIView):
-    pass
+    serializer_class = BenefactorSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        srz_data = self.serializer_class(data=request.data)
+        if srz_data.is_valid():
+            Benefactor.objects.create(
+                user=request.user,
+                **srz_data.validated_data
+            )
+            return Response(srz_data.data, status=status.HTTP_201_CREATED)
+        return Response(srz_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CharityRegistration(APIView):
-    pass
+    serializer_class = CharitySerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        srz_data = self.serializer_class(data=request.data)
+        if srz_data.is_valid():
+            Charity.objects.create(
+                user=request.user,
+                **srz_data.validated_data
+            )
+            return Response(srz_data.data, status=status.HTTP_201_CREATED)
+        return Response(srz_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Tasks(generics.ListCreateAPIView):
