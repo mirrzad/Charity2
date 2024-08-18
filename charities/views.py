@@ -51,10 +51,10 @@ class Tasks(generics.ListCreateAPIView):
             **request.data,
             "charity_id": request.user.charity.id
         }
-        serializer = self.serializer_class(data = data)
-        serializer.is_valid(raise_exception = True)
+        serializer = self.serializer_class(data=data)
+        serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status = status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:
@@ -80,7 +80,17 @@ class Tasks(generics.ListCreateAPIView):
 
 
 class TaskRequest(APIView):
-    pass
+    permission_classes = (IsBenefactor, )
+    def get(self, request, task_id):
+        task = get_object_or_404(Task, id=task_id)
+        if task.state != 'P':
+            return Response({'detail': 'This task is not pending.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            benefactor = Benefactor.objects.get(user=request.user)
+            task.state = 'W'
+            task.assigned_benefactor = benefactor
+            task.save()
+            return Response({'detail': 'Request sent.'}, status=status.HTTP_200_OK)
 
 
 class TaskResponse(APIView):

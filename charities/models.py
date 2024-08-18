@@ -73,6 +73,7 @@ class Task(models.Model):
         Benefactor,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
     )
     date = models.DateField(null=True, blank=True)
     age_limit_from = models.IntegerField(null=True, blank=True)
